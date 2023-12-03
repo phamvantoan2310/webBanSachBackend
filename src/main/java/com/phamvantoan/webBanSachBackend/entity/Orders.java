@@ -2,13 +2,12 @@ package com.phamvantoan.webBanSachBackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.sql.Date;
 import java.util.List;
 @Entity
-@Table(name = "order")
+@Table(name = "orders")
 @Data
-public class Order {
+public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
@@ -41,6 +40,6 @@ public class Order {
     @JoinColumn(name = "delivery_type_id")
     private DeliveryType deliveryType;
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "orders", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
     private List<OrderItem> orderItemList;
 }

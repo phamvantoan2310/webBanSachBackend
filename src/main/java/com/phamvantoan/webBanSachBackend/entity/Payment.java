@@ -2,7 +2,6 @@ package com.phamvantoan.webBanSachBackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.util.List;
 @Entity
 @Table(name = "payment")
@@ -22,6 +21,6 @@ public class Payment {
     @Column(name = "price_of_payment")
     private int priceOfPayment;
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    private List<Order> orderList;
+    @OneToMany(mappedBy = "payment", fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<Orders> orderList;
 }

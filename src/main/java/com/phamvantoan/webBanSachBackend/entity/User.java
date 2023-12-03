@@ -50,5 +50,5 @@ public class User {
     private List<Role> roleList;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<Order> orderList;
+    private List<Orders> orderList;
 }

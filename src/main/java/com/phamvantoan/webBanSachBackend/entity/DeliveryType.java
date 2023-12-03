@@ -22,5 +22,5 @@ public class DeliveryType {
     private int priceOfDeliveryType;
 
     @OneToMany(mappedBy = "deliveryType", fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
-    private List<Order> orderList;
+    private List<Orders> orderList;
 }

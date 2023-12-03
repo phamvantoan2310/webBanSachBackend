@@ -23,5 +23,5 @@ public class OrderItem {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+    private Orders orders;
 }
