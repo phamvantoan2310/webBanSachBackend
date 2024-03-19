@@ -1,6 +1,7 @@
 package com.phamvantoan.webBanSachBackend.service;
 
 import com.phamvantoan.webBanSachBackend.dao.userRepository;
+import com.phamvantoan.webBanSachBackend.entity.Cart;
 import com.phamvantoan.webBanSachBackend.entity.Notification;
 import com.phamvantoan.webBanSachBackend.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,10 @@ public class accountService {
         user.setAccountStatus(false);
 
         //lưu thông tin vào db
+        Cart cart = new Cart();
+        cart.setUser(user);
+        cart.setDeliveryAddress(user.getAddress());
+        user.setCart(cart);
         User registeredUser = userrepository.save(user);
 
         sendEmail(user.getEmail(), user.getActivationCode());

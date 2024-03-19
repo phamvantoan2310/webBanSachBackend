@@ -1,15 +1,15 @@
 package com.phamvantoan.webBanSachBackend.controller;
 
 import com.phamvantoan.webBanSachBackend.dao.bookRepository;
+import com.phamvantoan.webBanSachBackend.dao.cartItemRepository;
+import com.phamvantoan.webBanSachBackend.dao.cartRepository;
 import com.phamvantoan.webBanSachBackend.dao.wishListRepository;
-import com.phamvantoan.webBanSachBackend.entity.Book;
-import com.phamvantoan.webBanSachBackend.entity.User;
-import com.phamvantoan.webBanSachBackend.entity.WishList;
+import com.phamvantoan.webBanSachBackend.entity.*;
 import com.phamvantoan.webBanSachBackend.service.JwtService;
+import com.phamvantoan.webBanSachBackend.service.cartService;
 import com.phamvantoan.webBanSachBackend.service.userService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,9 +23,15 @@ public class userController {
     @Autowired
     private JwtService jwtService;
     @Autowired
+    private cartService cartservice;
+    @Autowired
     private wishListRepository wishlistrepository;
     @Autowired
     private bookRepository bookrepository;
+    @Autowired
+    private cartItemRepository cartitemrepository;
+    @Autowired
+    private cartRepository cartrepository;
     @PostMapping("/addwishlist")
     public ResponseEntity<?> addWishList(@RequestBody WishList wishList, @RequestHeader("Authorization") String authorizationHeader){
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
@@ -116,6 +122,64 @@ public class userController {
             return ResponseEntity.badRequest().body("Xóa thất bại");
         }else {
             return ResponseEntity.badRequest().body("Xóa không thành công");
+        }
+    }
+    @PostMapping("/addCartItem")
+    public ResponseEntity<?> addCartItem(@RequestBody addCartItemResponse addcartitemresponse, @RequestHeader("Authorization") String authorizationHeader){
+        try {
+            if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+                String token = authorizationHeader.substring(7);
+                if(token != null){
+                    String userName = this.jwtService.extractUserName(token);
+                    if(userName != null){
+                        User user = this.userservice.findByUserName(userName);
+                        Book book = this.bookrepository.findByBookID(addcartitemresponse.getBookID());
+                        this.cartservice.addCartItem(addcartitemresponse.getNumberOfBook(), book, user.getCart());
+                        return ResponseEntity.ok("Thêm cartItem thành công");
+                    }
+                    else {
+                        return ResponseEntity.badRequest().body("Lấy user thất bại");
+                    }
+                }else {
+                    return ResponseEntity.badRequest().body("Lấy token thất bại");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lấy header thất bại");
+            }
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @PostMapping("/deleteCartItem")
+    public ResponseEntity<?> deleteCartItem(@RequestBody int cartItemID, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    User user = this.userservice.findByUserName(userName);
+                    CartItem cartItem = this.cartitemrepository.findByCartItemID(cartItemID);
+                    this.cartservice.deleteCartItem(cartItem);
+                    return ResponseEntity.ok("Xóa thành công");
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
+
+    @PostMapping("/deleteAllCartItem")
+    public ResponseEntity<?> deleteAllCartItem(@RequestBody int cartID){
+        try {
+            this.cartservice.deleteAllCartItem(cartID);
+            return ResponseEntity.ok("Xóa thành công");
+        }catch (Exception e){
+            throw e;
         }
     }
 }

@@ -12,16 +12,13 @@ public class Cart {
     @Column(name = "cart_id")
     private int cartID;
 
-    @Column(name = "total_price")
-    private double totalPrice;
-
     @Column(name = "delivery_address")
     private String deliveryAddress;
 
-    @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "cart", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<CartItem> cartItemList;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
     private User user;
 }

@@ -13,8 +13,12 @@ public class endpoints {
             "/wish-lists",
             "/wish-lists/**",
             "/users/**",
-
-
+            "/carts",
+            "/carts/**",
+            "/cart-items",
+            "/cart-items/**",
+            "/delivery-types",
+            "/payments",
     };
     public static final String[] PUBLIC_POST_ENDPOINTS = {
             "/account/register",
@@ -23,6 +27,9 @@ public class endpoints {
             "/user/deletewishlist",
             "/user/addbooktowishlist",
             "/user/removebookinwishlist",
+            "/user/addCartItem",
+            "/user/deleteCartItem",
+            "/user/deleteAllCartItem",
     };
     public static final String[] ADMIN_GET_ENDPOINTS = {
             "/users",
