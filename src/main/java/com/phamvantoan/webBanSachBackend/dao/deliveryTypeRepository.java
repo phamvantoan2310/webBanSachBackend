@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @RepositoryRestResource(path = "delivery-types")
 public interface deliveryTypeRepository extends JpaRepository<DeliveryType, Integer> {
+    public DeliveryType findByDeliveryTypeID(int deliveryTypeID);
 }

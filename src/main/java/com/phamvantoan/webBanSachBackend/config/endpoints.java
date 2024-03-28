@@ -19,6 +19,10 @@ public class endpoints {
             "/cart-items/**",
             "/delivery-types",
             "/payments",
+            "/orders",
+            "/orders/**",
+            "/order-items",
+            "/order-items/**",
     };
     public static final String[] PUBLIC_POST_ENDPOINTS = {
             "/account/register",
@@ -30,6 +34,10 @@ public class endpoints {
             "/user/addCartItem",
             "/user/deleteCartItem",
             "/user/deleteAllCartItem",
+            "/user/changeInformationUser",
+            "/user/deleteorder",
+            "/user/buynow",
+            "/api/payment/charge",
     };
     public static final String[] ADMIN_GET_ENDPOINTS = {
             "/users",

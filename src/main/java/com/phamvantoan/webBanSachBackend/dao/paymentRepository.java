@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @RepositoryRestResource(path = "payments")
 public interface paymentRepository extends JpaRepository<Payment, Integer> {
+    public Payment findByPaymentID(int paymentID);
 }

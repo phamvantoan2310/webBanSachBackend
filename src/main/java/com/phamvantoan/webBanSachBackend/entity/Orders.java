@@ -1,5 +1,6 @@
 package com.phamvantoan.webBanSachBackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.sql.Date;
@@ -7,6 +8,7 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @Data
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Orders {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,18 +30,34 @@ public class Orders {
     @Column(name = "delivery_date")
     private Date deliveryDate;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "payment_id")
     private Payment payment;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "delivery_type_id")
     private DeliveryType deliveryType;
 
-    @OneToMany(mappedBy = "orders", fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "orders", fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private List<OrderItem> orderItemList;
+
+    @Override
+    public String toString() {
+        return "Orders{" +
+                "orderID=" + orderID +
+                ", totalPrice=" + totalPrice +
+                ", deliveryAddress='" + deliveryAddress + '\'' +
+                ", orderStatus='" + orderStatus + '\'' +
+                ", orderDate=" + orderDate +
+                ", deliveryDate=" + deliveryDate +
+                ", user=" + user +
+                ", payment=" + payment +
+                ", deliveryType=" + deliveryType +
+                ", orderItemList=" + orderItemList +
+                '}';
+    }
 }

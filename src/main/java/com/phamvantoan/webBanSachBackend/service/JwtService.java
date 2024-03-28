@@ -60,7 +60,7 @@ public class JwtService {
                 .setSubject(username) //set subject là tên đăng nhập
                 .setId(String.valueOf(userID))
                 .setIssuedAt(new Date(System.currentTimeMillis())) //set thời gian ban hành
-                .setExpiration(new Date(System.currentTimeMillis()+60*60*1000)) //set thời gian hết hạn 1 tiếng
+                .setExpiration(new Date(System.currentTimeMillis()+24*60*60*1000)) //set thời gian hết hạn 1 ngày
                 .signWith(SignatureAlgorithm.HS256, getSigneKey())
                 .compact();
     }

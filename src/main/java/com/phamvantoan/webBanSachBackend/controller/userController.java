@@ -1,12 +1,10 @@
 package com.phamvantoan.webBanSachBackend.controller;
 
-import com.phamvantoan.webBanSachBackend.dao.bookRepository;
-import com.phamvantoan.webBanSachBackend.dao.cartItemRepository;
-import com.phamvantoan.webBanSachBackend.dao.cartRepository;
-import com.phamvantoan.webBanSachBackend.dao.wishListRepository;
+import com.phamvantoan.webBanSachBackend.dao.*;
 import com.phamvantoan.webBanSachBackend.entity.*;
 import com.phamvantoan.webBanSachBackend.service.JwtService;
 import com.phamvantoan.webBanSachBackend.service.cartService;
+import com.phamvantoan.webBanSachBackend.service.orderService;
 import com.phamvantoan.webBanSachBackend.service.userService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +23,10 @@ public class userController {
     @Autowired
     private cartService cartservice;
     @Autowired
+    private orderService orderservice;
+    @Autowired
+    private orderRepository orderrepository;
+    @Autowired
     private wishListRepository wishlistrepository;
     @Autowired
     private bookRepository bookrepository;
@@ -32,6 +34,12 @@ public class userController {
     private cartItemRepository cartitemrepository;
     @Autowired
     private cartRepository cartrepository;
+    @Autowired
+    private userRepository userrepository;
+    @Autowired
+    private deliveryTypeRepository deliverytyperepository;
+    @Autowired
+    private paymentRepository paymentrepository;
     @PostMapping("/addwishlist")
     public ResponseEntity<?> addWishList(@RequestBody WishList wishList, @RequestHeader("Authorization") String authorizationHeader){
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
@@ -180,6 +188,67 @@ public class userController {
             return ResponseEntity.ok("Xóa thành công");
         }catch (Exception e){
             throw e;
+        }
+    }
+    @PostMapping("/changeInformationUser")
+    public ResponseEntity<?> changeInformationUser(@RequestBody changeInformationUserResponse changeinformationuserresponse, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader!= null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    User user = this.userservice.findByUserName(userName);
+                    if(changeinformationuserresponse.getPhoneNumber()!=""){
+                        user.setPhoneNumber(changeinformationuserresponse.getPhoneNumber());
+                    }
+                    if(changeinformationuserresponse.getEmail() != ""){
+                        user.setEmail(changeinformationuserresponse.getEmail());
+                    }
+                    if(changeinformationuserresponse.getAddress() != ""){
+                        user.setAddress(changeinformationuserresponse.getAddress());
+                    }
+                    this.userrepository.save(user);
+                    return ResponseEntity.ok("Đổi thông tin thành công");
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
+    @PostMapping("/deleteorder")
+    public ResponseEntity<?> deleteOrder(@RequestBody int orderID){
+        try {
+            Orders orders = this.orderrepository.findOrdersByOrderID(orderID);
+            this.orderservice.deleteOrder(orders);
+            return ResponseEntity.ok("Xóa thành công");
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e);
+        }
+    }
+    @PostMapping("/buynow")
+    public ResponseEntity<?> buyNow(@RequestBody createOrderResponse createorderresponse, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    User user = this.userservice.findByUserName(userName);
+                    DeliveryType deliveryType = this.deliverytyperepository.findByDeliveryTypeID(createorderresponse.getDeliveryTypeID());
+                    Payment payment = this.paymentrepository.findByPaymentID(createorderresponse.getPaymentID());
+                    this.orderservice.createOrder(user, deliveryType, payment);
+                    return ResponseEntity.ok("Tạo order thành công");
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
         }
     }
 }
