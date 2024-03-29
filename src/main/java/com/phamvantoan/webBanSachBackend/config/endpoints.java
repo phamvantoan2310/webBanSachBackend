@@ -2,7 +2,7 @@ package com.phamvantoan.webBanSachBackend.config;
 
 public class endpoints {
     public static final String FRONT_END_HOST = "http://localhost:3000";
-    public static final String[] PUBLIC_GET_ENDPOINTS = {
+    protected static final String[] PUBLIC_GET_ENDPOINTS = {
             "/books",
             "/books/**",
             "/images",
@@ -23,8 +23,14 @@ public class endpoints {
             "/orders/**",
             "/order-items",
             "/order-items/**",
+            "/categorys",
+            "/categorys/**",
+            "/evaluates",
+            "/evaluates/**",
+            "/authors",
+            "/authors/**",
     };
-    public static final String[] PUBLIC_POST_ENDPOINTS = {
+    protected static final String[] PUBLIC_POST_ENDPOINTS = {
             "/account/register",
             "/account/login",
             "/user/addwishlist",
@@ -39,11 +45,11 @@ public class endpoints {
             "/user/buynow",
             "/api/payment/charge",
     };
-    public static final String[] ADMIN_GET_ENDPOINTS = {
+    protected static final String[] ADMIN_GET_ENDPOINTS = {
             "/users",
             "/users/**",
     };
-    public static final String[] ADMIN_POST_ENDPOINTS = {
+    protected static final String[] ADMIN_POST_ENDPOINTS = {
             "/books",
             "/books/**",
             "/admin/addbook",

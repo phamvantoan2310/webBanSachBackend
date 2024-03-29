@@ -1,8 +1,12 @@
 package com.phamvantoan.webBanSachBackend.service;
 
+import com.phamvantoan.webBanSachBackend.controller.bookToWishListResponse;
+import com.phamvantoan.webBanSachBackend.controller.changeInformationUserResponse;
+import com.phamvantoan.webBanSachBackend.dao.bookRepository;
 import com.phamvantoan.webBanSachBackend.dao.roleRepository;
 import com.phamvantoan.webBanSachBackend.dao.userRepository;
 import com.phamvantoan.webBanSachBackend.dao.wishListRepository;
+import com.phamvantoan.webBanSachBackend.entity.Book;
 import com.phamvantoan.webBanSachBackend.entity.Role;
 import com.phamvantoan.webBanSachBackend.entity.User;
 import com.phamvantoan.webBanSachBackend.entity.WishList;
@@ -15,18 +19,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class userServiceImpl implements userService{
     private userRepository userrepository;
-    private roleRepository rolerepository;
-    private wishListRepository wishlistrepository;
     @Autowired
-    public userServiceImpl(userRepository userrepository, roleRepository rolerepository, wishListRepository wishlistrepository){
-        this.rolerepository = rolerepository;
+    public userServiceImpl(userRepository userrepository){
         this.userrepository = userrepository;
-        this.wishlistrepository = wishlistrepository;
     }
 
     @Override
@@ -46,15 +47,40 @@ public class userServiceImpl implements userService{
     public Collection<? extends GrantedAuthority> rolesToAuthorities(Collection<Role> Roles){
         return Roles.stream().map(role->new SimpleGrantedAuthority(role.getRoleName())).collect(Collectors.toList());
     }
+
+
     @Override
-    public ResponseEntity<?> addWishList(WishList wishlist){
-        this.wishlistrepository.save(wishlist);
-        return ResponseEntity.ok("Thêm wishlist thành công");
+    public ResponseEntity<?> changeInformationUser(User user, changeInformationUserResponse changeinformationuserresponse) {
+        if(changeinformationuserresponse.getPhoneNumber()!=""){
+            user.setPhoneNumber(changeinformationuserresponse.getPhoneNumber());
+        }
+        if(changeinformationuserresponse.getEmail() != ""){
+            user.setEmail(changeinformationuserresponse.getEmail());
+        }
+        if(changeinformationuserresponse.getAddress() != ""){
+            user.setAddress(changeinformationuserresponse.getAddress());
+        }
+        this.userrepository.save(user);
+        return ResponseEntity.ok("Đổi thông tin thành công");
     }
 
     @Override
-    public ResponseEntity<?> deleteWishList(int wishListID) {
-        this.wishlistrepository.deleteById(wishListID);
-        return ResponseEntity.ok("Xóa thành công");
+    public User save(User user) {
+        return this.userrepository.save(user);
+    }
+
+    @Override
+    public boolean existsByUserName(String userName) {
+        return this.userrepository.existsByUserName(userName);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return this.userrepository.existsByEmail(email);
+    }
+
+    @Override
+    public User findByEmail(String email) {
+        return this.userrepository.findByEmail(email);
     }
 }
