@@ -44,6 +44,7 @@ public class endpoints {
             "/user/deleteorder",
             "/user/buynow",
             "/api/payment/charge",
+            "/user/addevaluate",
     };
     protected static final String[] ADMIN_GET_ENDPOINTS = {
             "/users",

@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @RepositoryRestResource(path = "order-items")
 public interface orderItemRepository extends JpaRepository<OrderItem, Integer> {
+    public OrderItem findByOrderItemID(int orderItemID);
 }

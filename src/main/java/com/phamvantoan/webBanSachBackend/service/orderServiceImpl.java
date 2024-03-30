@@ -21,6 +21,7 @@ public class orderServiceImpl implements orderService{
     private deliveryTypeService deliverytypeservice;
     @Autowired
     private paymentService paymentservice;
+
     @Override
     public ResponseEntity<?> deleteOrder(int orderID){
         Orders orders = this.orderrepository.findOrdersByOrderID(orderID);
@@ -83,5 +84,10 @@ public class orderServiceImpl implements orderService{
         }catch (Exception e){
             throw e;
         }
+    }
+
+    @Override
+    public OrderItem findByOrderItemID(int orderItemID) {
+        return this.orderitemrepository.findByOrderItemID(orderItemID);
     }
 }

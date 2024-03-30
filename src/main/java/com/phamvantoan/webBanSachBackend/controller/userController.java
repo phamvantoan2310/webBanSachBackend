@@ -23,6 +23,8 @@ public class userController {
     private orderService orderservice;
     @Autowired
     private wishlistService wishlistservice;
+    @Autowired
+    private evaluateService evaluateservice;
     @PostMapping("/addwishlist")
     public ResponseEntity<?> addWishList(@RequestBody WishList wishList, @RequestHeader("Authorization") String authorizationHeader){
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
@@ -161,6 +163,27 @@ public class userController {
 
                     this.orderservice.createOrder(user, createorderresponse.getDeliveryTypeID(), createorderresponse.getPaymentID());
                     return ResponseEntity.ok("Tạo order thành công");
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
+
+    @PostMapping("/addevaluate")
+    public ResponseEntity<?> addEvaluate(@RequestBody createEvaluateResponse createevaluateresponse, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    User user = this.userservice.findByUserName(userName);
+
+                    return this.evaluateservice.addEvaluate(user, createevaluateresponse);
                 }else {
                     return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
                 }
