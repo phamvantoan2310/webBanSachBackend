@@ -34,4 +34,17 @@ public class evaluateServiceImpl implements evaluateService{
         this.evaluaterepository.save(evaluate);
         return ResponseEntity.ok("thêm evaluate thành công");
     }
+
+    @Override
+    public ResponseEntity<?> deleteEvaluate(int evaluateID) {
+        Evaluate evaluate = this.evaluaterepository.findByEvaluateID(evaluateID);
+        evaluate.getUser().getEvaluateList().remove(evaluate);
+        evaluate.setUser(null);
+
+        evaluate.getBook().getEvaluateList().remove(evaluate);
+        evaluate.setBook(null);
+
+        this.evaluaterepository.delete(evaluate);
+        return ResponseEntity.ok("Xóa đánh giá thành công");
+    }
 }

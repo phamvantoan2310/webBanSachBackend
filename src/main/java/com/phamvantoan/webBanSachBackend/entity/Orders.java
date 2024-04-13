@@ -45,6 +45,10 @@ public class Orders {
     @OneToMany(mappedBy = "orders", fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private List<OrderItem> orderItemList;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "report_id")
+    private Report report;
+
     @Override
     public String toString() {
         return "Orders{" +

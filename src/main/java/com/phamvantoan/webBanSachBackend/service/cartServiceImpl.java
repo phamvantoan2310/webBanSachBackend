@@ -32,8 +32,10 @@ public class cartServiceImpl implements cartService{
         cartItem.setPrice(numberOfBook * book.getPrice());
         cartItem.setBook(book);
         book.getCartItemList().add(cartItem);
-        cartItem.setCart(cart);
-        cart.getCartItemList().add(cartItem);
+        if(cart.getCartItemList() != null){
+            cartItem.setCart(cart);
+            cart.getCartItemList().add(cartItem);
+        }
         this.cartitemrepository.save(cartItem);
         return ResponseEntity.ok("Thêm cartItem thành công");
     }
@@ -63,5 +65,15 @@ public class cartServiceImpl implements cartService{
             this.cartitemrepository.delete(cartItem);
         }
         return ResponseEntity.ok("Xóa thành công");
+    }
+
+    @Override
+    public ResponseEntity<?> deleteCart(int cartID) {
+        Cart cart = this.cartrepository.findByCartID(cartID);
+        deleteAllCartItem(cartID);
+        cart.getUser().setCart(null);
+        cart.setUser(null);
+        this.cartrepository.delete(cart);
+        return ResponseEntity.ok("Xóa giỏ hàng thành công");
     }
 }

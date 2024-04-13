@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @RepositoryRestResource(path = "images")
 public interface imageRepository extends JpaRepository<Image, Integer> {
+    public Image findByImageID(int imageID);
 }

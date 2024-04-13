@@ -7,5 +7,5 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface adminService {
-    public ResponseEntity<?> addBook(Book book, List<Image> images, String email);
+    public ResponseEntity<?> addBook(Book book, List<Image> images,int categoryID, String email);
 }

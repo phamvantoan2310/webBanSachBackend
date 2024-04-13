@@ -46,9 +46,13 @@ public class securityConfiguration implements RepositoryRestConfigurer{
         http.authorizeHttpRequests(
                 config->config
                         .requestMatchers(HttpMethod.GET, endpoints.PUBLIC_GET_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, endpoints.ADMIN_GET_ENDPOINTS).hasAnyAuthority("ADMIN", "STAFF")
-                        .requestMatchers(HttpMethod.POST, endpoints.ADMIN_POST_ENDPOINTS).hasAnyAuthority("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.POST,endpoints.PUBLIC_POST_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.GET, endpoints.ADMIN_GET_ENDPOINTS).hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, endpoints.ADMIN_POST_ENDPOINTS).hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, endpoints.STAFF_GET_ENDPOINT).hasAnyAuthority("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.POST, endpoints.STAFF_POST_ENDPOINT).hasAnyAuthority("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.PUT, endpoints.STAFF_PUT_ENDPOINT).hasAnyAuthority("ADMIN", "STAFF")
+                        .requestMatchers(HttpMethod.DELETE, endpoints.STAFF_DELETE_ENDPOINT).hasAnyAuthority("ADMIN", "STAFF")
 
         );
         http.cors(cors->{ //set endpoint của frontend và các method được phép truy cập

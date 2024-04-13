@@ -13,18 +13,23 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/user")
 public class userController {
-    @Autowired
     private userService userservice;
-    @Autowired
     private JwtService jwtService;
-    @Autowired
     private cartService cartservice;
-    @Autowired
     private orderService orderservice;
-    @Autowired
     private wishlistService wishlistservice;
-    @Autowired
     private evaluateService evaluateservice;
+    private reportService reportservice;
+    @Autowired
+    public userController(userService userservice, JwtService jwtService, cartService cartservice, orderService orderservice, wishlistService wishlistservice, evaluateService evaluateservice, reportService reportservice){
+        this.userservice = userservice;
+        this.jwtService = jwtService;
+        this.cartservice = cartservice;
+        this.orderservice = orderservice;
+        this.wishlistservice = wishlistservice;
+        this.evaluateservice = evaluateservice;
+        this.reportservice = reportservice;
+    }
     @PostMapping("/addwishlist")
     public ResponseEntity<?> addWishList(@RequestBody WishList wishList, @RequestHeader("Authorization") String authorizationHeader){
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
@@ -194,4 +199,45 @@ public class userController {
             return ResponseEntity.badRequest().body("Lỗi khi lấy header");
         }
     }
+
+    @PostMapping("/createreport")
+    public ResponseEntity<?> createReport(@RequestBody reportResponse reportresponse , @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    User user = this.userservice.findByUserName(userName);
+                    return this.reportservice.createReport(user, reportresponse.getReportDetail(), reportresponse.getOrderID(), reportresponse.getReportTypeID(), reportresponse.getReportImageDetail());
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
+    @PostMapping("/completeorder")
+    public ResponseEntity<?> completeOrder(@RequestBody int orderID, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    return this.orderservice.completeOrder(orderID);
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
+
+
+
 }

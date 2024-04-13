@@ -30,6 +30,8 @@ public class Book {
 
     @Column(name = "number_of_book")
     private int numberOfBooks;
+    @Column(name = "quantity_sold")
+    private int quantitySold;
 
     @Column(name = "point")
     private int point;

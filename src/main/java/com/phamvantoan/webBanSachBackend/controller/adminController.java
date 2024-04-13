@@ -14,12 +14,15 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/admin")
 public class adminController {
-    @Autowired
     private adminService adminservice;
-    @Autowired
     private JwtService jwtService;
-    @Autowired
     private userService userservice;
+    @Autowired
+    public adminController(adminService adminservice, JwtService jwtService, userService userservice){
+        this.adminservice = adminservice;
+        this.jwtService = jwtService;
+        this.userservice = userservice;
+    }
 
     @PostMapping("/addbook")
     public ResponseEntity<?> addBook(@RequestBody addBookResponse addbookresponse, @RequestHeader("Authorization") String authorizationHeader){
@@ -31,7 +34,7 @@ public class adminController {
                 if(userName != null && this.jwtService.validateToken(token, userDetails)){
                     User user = this.userservice.findByUserName((userName));
                     if(user != null){
-                        this.adminservice.addBook(addbookresponse.getBook(),addbookresponse.getImages(), user.getEmail());
+                        this.adminservice.addBook(addbookresponse.getBook(),addbookresponse.getImages(), addbookresponse.getCategoryID(), user.getEmail());
                         return ResponseEntity.ok("Thêm sách thành công");
                     }
                 }else {

@@ -14,6 +14,7 @@ import java.util.List;
 public class wishlistServiceImpl implements wishlistService{
     private wishListRepository wishlistrepository;
     private bookService bookservice;
+
     @Autowired
     public wishlistServiceImpl(wishListRepository wishlistrepository, bookService bookservice){
         this.wishlistrepository = wishlistrepository;

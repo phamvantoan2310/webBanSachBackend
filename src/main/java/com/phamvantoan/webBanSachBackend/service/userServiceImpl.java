@@ -6,28 +6,46 @@ import com.phamvantoan.webBanSachBackend.dao.bookRepository;
 import com.phamvantoan.webBanSachBackend.dao.roleRepository;
 import com.phamvantoan.webBanSachBackend.dao.userRepository;
 import com.phamvantoan.webBanSachBackend.dao.wishListRepository;
-import com.phamvantoan.webBanSachBackend.entity.Book;
-import com.phamvantoan.webBanSachBackend.entity.Role;
-import com.phamvantoan.webBanSachBackend.entity.User;
-import com.phamvantoan.webBanSachBackend.entity.WishList;
+import com.phamvantoan.webBanSachBackend.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class userServiceImpl implements userService{
     private userRepository userrepository;
+    private roleService roleservice;
+    private BCryptPasswordEncoder passwordEncoder;
+    private wishlistService wishlistservice;
+    private evaluateService evaluateservice;
+    private cartService cartservice;
+    private orderService orderservice;
+    private reportService reportservice;
+    private meetingService meetingservice;
     @Autowired
-    public userServiceImpl(userRepository userrepository){
+    public userServiceImpl(userRepository userrepository, roleService roleservice,@Lazy BCryptPasswordEncoder passwordEncoder,@Lazy wishlistService wishlistservice,@Lazy evaluateService evaluateservice,@Lazy cartService cartservice,@Lazy orderService orderservice,@Lazy reportService reportservice, @Lazy meetingService meetingservice){
         this.userrepository = userrepository;
+        this.roleservice = roleservice;
+        this.passwordEncoder = passwordEncoder;
+        this.wishlistservice = wishlistservice;
+        this.cartservice = cartservice;
+        this.evaluateservice = evaluateservice;
+        this.orderservice = orderservice;
+        this.reportservice = reportservice;
+        this.meetingservice = meetingservice;
     }
 
     @Override
@@ -66,6 +84,13 @@ public class userServiceImpl implements userService{
 
     @Override
     public User save(User user) {
+        Role role = this.roleservice.findByRoleID(3);
+        role.getUserList().add(user);
+        if(user.getRoleList() == null){
+            List<Role> roles = new ArrayList<>();
+            user.setRoleList(roles);
+        }
+        user.getRoleList().add(role);
         return this.userrepository.save(user);
     }
 
@@ -82,5 +107,98 @@ public class userServiceImpl implements userService{
     @Override
     public User findByEmail(String email) {
         return this.userrepository.findByEmail(email);
+    }
+
+    @Override
+    public ResponseEntity<?> staffUpdateUser(User user) {
+        try {
+            if(user != null){
+                User user1 = this.userrepository.findByUserID(user.getUserID());
+                if(user.getUserName() != ""){
+                    user1.setUserName(user.getUserName());
+                }
+                if(user.getPassword() != ""){
+                    String bcryptEncoder = this.passwordEncoder.encode(user.getPassword());
+                    user1.setPassword(bcryptEncoder);
+                }
+                if(user.getPhoneNumber() != ""){
+                    user1.setPhoneNumber(user.getPhoneNumber());
+                }
+                if(user.getEmail() != ""){
+                    user1.setEmail(user.getEmail());
+                }
+                if(user.getAddress() != ""){
+                    user1.setAddress(user.getAddress());
+                }
+                if(user.isSex()){
+                    user1.setSex(true);
+                }else {
+                    user1.setSex(false);
+                }
+                this.userrepository.save(user1);
+                return ResponseEntity.ok("Update user thành công");
+            }else {
+                return ResponseEntity.badRequest().body("Update thất bại do không có user");
+            }
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> deleteUser(int userID) {
+        try {
+            User user = this.userrepository.findByUserID(userID);
+
+            List<WishList> wishLists = new ArrayList<>();
+            List<Evaluate> evaluates = new ArrayList<>();
+            List<Report> reports =new ArrayList<>() ;
+            List<Orders> orders = new ArrayList<>();
+            List<Meeting> meetings = new ArrayList<>();
+
+            for(WishList wishList : user.getWishListList()){
+                wishLists.add(wishList);
+            }
+            for(Evaluate evaluate : user.getEvaluateList()){
+                evaluates.add(evaluate);
+            }
+            for(Orders order : user.getOrderList()){
+                orders.add(order);
+            }
+            for(Report report : user.getReportList()){
+                reports.add(report);
+            }
+
+
+            for (Meeting meeting: user.getMeetingList()){
+                this.meetingservice.deleteMeeting(meeting.getMeetingID());
+            }
+            for(WishList wishList : wishLists){
+                this.wishlistservice.deleteWishList(wishList.getWishListID());
+            }
+            for(Evaluate evaluate : evaluates){
+                this.evaluateservice.deleteEvaluate(evaluate.getEvaluateID());
+            }
+            if(user.getCart() != null){
+                this.cartservice.deleteCart(user.getCart().getCartID());
+            }
+            for(Orders order : orders){
+                this.orderservice.deleteOrder(order.getOrderID());
+            }
+            for(Report report : reports){
+                this.reportservice.deleteReport(report);
+            }
+            Iterator<Role> iterator = user.getRoleList().iterator();
+            while (iterator.hasNext()) {
+                Role role = iterator.next();
+                role.getUserList().remove(user); // Xóa user khỏi danh sách user của role
+
+                iterator.remove(); // Xóa role khỏi danh sách role của user
+            }
+            this.userrepository.delete(user);
+            return ResponseEntity.ok("Xóa khách hàng thành công");
+        }catch (Exception e){
+            throw e;
+        }
     }
 }

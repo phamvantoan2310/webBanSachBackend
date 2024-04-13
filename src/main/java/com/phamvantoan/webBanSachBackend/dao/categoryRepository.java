@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @RepositoryRestResource(path = "categorys")
 public interface categoryRepository extends JpaRepository<Category, Integer> {
+    public Category findByCategoryID(int categoryID);
 }

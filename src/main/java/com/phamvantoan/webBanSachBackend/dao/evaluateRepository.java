@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 
 @RepositoryRestResource(path = "evaluates")
 public interface evaluateRepository extends JpaRepository<Evaluate, Integer> {
+    public Evaluate findByEvaluateID(int evaluateID);
 }

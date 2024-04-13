@@ -1,6 +1,5 @@
 package com.phamvantoan.webBanSachBackend.service;
 
-import com.phamvantoan.webBanSachBackend.dao.userRepository;
 import com.phamvantoan.webBanSachBackend.entity.Cart;
 import com.phamvantoan.webBanSachBackend.entity.Notification;
 import com.phamvantoan.webBanSachBackend.entity.User;
@@ -14,12 +13,15 @@ import java.util.UUID;
 
 @Service
 public class accountServiceIpm implements accountService {
-    @Autowired
     private userService userservice;
-    @Autowired
     private emailService emailservice;
-    @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    public accountServiceIpm(userService userservice, emailService emailservice, BCryptPasswordEncoder passwordEncoder){
+        this.userservice = userservice;
+        this.emailservice = emailservice;
+        this.passwordEncoder = passwordEncoder;
+    }
     @Value("${email.sender}")
     private String emailSender;
     @Value("${activation.url}")
@@ -46,7 +48,7 @@ public class accountServiceIpm implements accountService {
         cart.setUser(user);
         cart.setDeliveryAddress(user.getAddress());
         user.setCart(cart);
-        User registeredUser = userservice.save(user);
+        this.userservice.save(user);
 
         sendEmail(user.getEmail(), user.getActivationCode());
         return ResponseEntity.ok("Đăng ký thành công");

@@ -9,4 +9,5 @@ public interface cartService {
     public ResponseEntity<?> addCartItem(int numberOfBook, int bookID, Cart cart);
     public ResponseEntity<?> deleteCartItem(int cartItemID);
     public ResponseEntity<?> deleteAllCartItem(int cartID);
+    public ResponseEntity<?> deleteCart(int cartID);
 }

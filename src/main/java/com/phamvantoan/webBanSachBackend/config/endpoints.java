@@ -29,6 +29,10 @@ public class endpoints {
             "/evaluates/**",
             "/authors",
             "/authors/**",
+            "/reporttypes",
+            "/reporttypes/**",
+            "/reports",
+            "/reports/**",
     };
     protected static final String[] PUBLIC_POST_ENDPOINTS = {
             "/account/register",
@@ -45,6 +49,8 @@ public class endpoints {
             "/user/buynow",
             "/api/payment/charge",
             "/user/addevaluate",
+            "/user/createreport",
+            "/user/completeorder",
     };
     protected static final String[] ADMIN_GET_ENDPOINTS = {
             "/users",
@@ -53,7 +59,33 @@ public class endpoints {
     protected static final String[] ADMIN_POST_ENDPOINTS = {
             "/books",
             "/books/**",
+
+    };
+
+    protected  static final String[] STAFF_GET_ENDPOINT = {
+            "/users",
+            "/users/**",
+            "/meetings",
+            "/meetings/**",
+    };
+
+    protected static  final String[] STAFF_POST_ENDPOINT = {
+            "/books",
+            "/books/**",
+            "/staff/addbookimage",
+            "/staff/bookchange",
             "/admin/addbook",
+            "/staff/numberofbookchange",
+            "/staff/sendreportresponse",
+            "/staff/confirmorder",
+    };
+    protected static  final String[] STAFF_DELETE_ENDPOINT = {
+            "/staff/deletebookimage",
+            "/staff/deletebook",
+            "/staff/deleteuser",
+    };
+    protected static final String[] STAFF_PUT_ENDPOINT = {
+            "/staff/updateuser",
     };
 
 }

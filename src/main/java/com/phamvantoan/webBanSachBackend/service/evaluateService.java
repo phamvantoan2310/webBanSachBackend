@@ -7,4 +7,5 @@ import org.springframework.http.ResponseEntity;
 
 public interface evaluateService {
     public ResponseEntity<?> addEvaluate(User user, createEvaluateResponse createevaluateresponse);
+    public ResponseEntity<?> deleteEvaluate(int evaluateID);
 }

@@ -15,4 +15,7 @@ public interface userService extends UserDetailsService {
     public boolean existsByUserName(String userName);
     public boolean existsByEmail(String email);
     public User findByEmail(String email);
+
+    public ResponseEntity<?> staffUpdateUser(User user);
+    public ResponseEntity<?> deleteUser(int userID);
 }

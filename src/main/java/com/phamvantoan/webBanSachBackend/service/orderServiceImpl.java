@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,25 +22,43 @@ public class orderServiceImpl implements orderService{
     private deliveryTypeService deliverytypeservice;
     @Autowired
     private paymentService paymentservice;
+    @Autowired
+    private reportService reportservice;
 
     @Override
     public ResponseEntity<?> deleteOrder(int orderID){
-        Orders orders = this.orderrepository.findOrdersByOrderID(orderID);
-        orders.getUser().getOrderList().remove(orders);
+        try {
+            Orders orders = this.orderrepository.findOrdersByOrderID(orderID);
+            orders.getUser().getOrderList().remove(orders);
 
-        List<OrderItem> orderItems = new ArrayList<>();
+            List<OrderItem> orderItems = new ArrayList<>();
 
-        for(OrderItem orderItem : orders.getOrderItemList()){
-            orderItem.getBook().getOrderItemList().remove(orderItem);
-            orderItems.add(orderItem);
+            for(OrderItem orderItem : orders.getOrderItemList()){
+                orderItem.getBook().getOrderItemList().remove(orderItem);
+                orderItems.add(orderItem);
+            }
+
+            for(OrderItem orderItem : orderItems){
+                orders.getOrderItemList().remove(orderItem);
+                orderItem.setBook(null);
+                this.orderitemrepository.delete(orderItem);
+            }
+
+            orders.getDeliveryType().getOrderList().remove(orders);
+            orders.setDeliveryType(null);
+
+            orders.getPayment().getOrderList().remove(orders);
+            orders.setPayment(null);
+
+            if(orders.getReport() != null){
+                this.reportservice.deleteReport(orders.getReport());
+            }
+
+            this.orderrepository.delete(orders);
+
+        }catch (Exception e){
+            throw e;
         }
-
-        for(OrderItem orderItem : orderItems){
-            orders.getOrderItemList().remove(orderItem);
-            this.orderitemrepository.delete(orderItem);
-        }
-
-        this.orderrepository.delete(orders);
         return ResponseEntity.ok("ok");
     }
 
@@ -54,7 +73,7 @@ public class orderServiceImpl implements orderService{
             Payment payment = this.paymentservice.findByPaymentID(paymentID);
             Orders orders = new Orders();                                             //set thông tin cơ bản order
             orders.setOrderDate(java.sql.Date.valueOf(getCurrentDate()));
-            orders.setOrderStatus("Đang Chờ");
+            orders.setOrderStatus("Đang Chờ Xác Nhận");
             orders.setUser(user);
             orders.setDeliveryAddress(user.getAddress());
             orders.setDeliveryType(deliveryType);
@@ -73,8 +92,11 @@ public class orderServiceImpl implements orderService{
                 cartItem.getBook().getOrderItemList().add(orderItem);
                 orderItems.add(orderItem);
 
+
                 totalPrice += cartItem.getPrice();
             }
+            totalPrice += deliveryType.getPriceOfDeliveryType();
+            totalPrice += payment.getPriceOfPayment();
             orders.setOrderItemList(orderItems);
             orders.setTotalPrice(totalPrice);
 
@@ -87,7 +109,83 @@ public class orderServiceImpl implements orderService{
     }
 
     @Override
+    public ResponseEntity<?> deleteOrderItem(int orderItemID) {
+        OrderItem orderItem = this.orderitemrepository.findByOrderItemID(orderItemID);
+        orderItem.getOrders().getOrderItemList().remove(orderItem);
+        orderItem.setOrders(null);
+
+        orderItem.getBook().getOrderItemList().remove(orderItem);
+        orderItem.setBook(null);
+
+        this.orderitemrepository.delete(orderItem);
+        return ResponseEntity.ok("Xóa orderItem thành công");
+    }
+
+    @Override
+    public ResponseEntity<?> completeOrder(int orderID) {
+        try {
+            Orders orders = findByOrderID(orderID);
+            orders.setOrderStatus("Hoàn Thành");
+            if(orders.getOrderItemList() != null){   //set quantity sold của sách
+                for(OrderItem orderItem : orders.getOrderItemList()){
+                    if(orderItem.getBook() != null) {
+                        orderItem.getBook().setQuantitySold(orderItem.getBook().getQuantitySold() + orderItem.getNumberOfOrderItem());
+                    }
+                }
+            }
+
+            orders.setDeliveryDate(Date.valueOf(getCurrentDate())); //set ngày giao hàng khi khách hàng hoàn thành
+
+            Report report = orders.getReport();
+            if(report != null){
+                report.getReporttype().getReportList().remove(report);
+                report.setReporttype(null);
+                report.getUser().getReportList().remove(report);
+                report.setUser(null);
+                report.getOrders().setReport(null);
+                report.setOrders(null);
+                this.reportservice.deleteReport(report);
+            }
+            this.orderrepository.save(orders);
+            return ResponseEntity.ok("Hoàn thành đơn hàng thành công");
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> confirmOrder(int orderID) {
+        try {
+            Orders orders = findByOrderID(orderID);
+            orders.setOrderStatus("Đơn Hàng Đang Được Giao");
+            if(orders.getDeliveryType() != null){
+                if(orders.getDeliveryType().getDeliveryTypeID() == 1){
+                    orders.setDeliveryDate(Date.valueOf(getCurrentDate().plusDays(7)));
+                } else if (orders.getDeliveryType().getDeliveryTypeID() == 2) {
+                    orders.setDeliveryDate(Date.valueOf(getCurrentDate().plusDays(3)));
+                } else if (orders.getDeliveryType().getDeliveryTypeID() == 3) {
+                    orders.setDeliveryDate(Date.valueOf(getCurrentDate().plusDays(1)));
+                }
+            }
+
+            for(OrderItem orderItem : orders.getOrderItemList()){ //set số lượng sách sau khi confirm đơn hàng
+                orderItem.getBook().setNumberOfBooks(orderItem.getBook().getNumberOfBooks() - orderItem.getNumberOfOrderItem());
+            }
+            this.orderrepository.save(orders);
+            return ResponseEntity.ok("Xác nhận đơn hàng thành công ");
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @Override
     public OrderItem findByOrderItemID(int orderItemID) {
         return this.orderitemrepository.findByOrderItemID(orderItemID);
     }
+
+    @Override
+    public Orders findByOrderID(int orderID) {
+        return this.orderrepository.findOrdersByOrderID(orderID);
+    }
+
 }
