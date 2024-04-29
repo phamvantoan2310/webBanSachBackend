@@ -11,11 +11,14 @@ public interface userService extends UserDetailsService {
     public User findByUserName(String userName);
     public ResponseEntity<?> changeInformationUser(User user, changeInformationUserResponse changeinformationuserresponse);
 
-    public User save(User user);
+    public User save(User user, int role);
     public boolean existsByUserName(String userName);
     public boolean existsByEmail(String email);
     public User findByEmail(String email);
 
     public ResponseEntity<?> staffUpdateUser(User user);
     public ResponseEntity<?> deleteUser(int userID);
+
+    public User findByUserID(int userID);
+    public ResponseEntity<?> adminUpdateStaff(User staff);
 }

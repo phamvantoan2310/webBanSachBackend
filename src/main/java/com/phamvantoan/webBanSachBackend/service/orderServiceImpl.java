@@ -24,6 +24,8 @@ public class orderServiceImpl implements orderService{
     private paymentService paymentservice;
     @Autowired
     private reportService reportservice;
+    @Autowired
+    private bookService bookservice;
 
     @Override
     public ResponseEntity<?> deleteOrder(int orderID){
@@ -67,7 +69,7 @@ public class orderServiceImpl implements orderService{
     }
     @Override
     @Transactional
-    public ResponseEntity<?> createOrder(User user, int deliveryTypeID, int paymentID){
+    public ResponseEntity<?> createOrder(User user, int deliveryTypeID, int paymentID, int bookID, int numberOfBook){
         try{
             DeliveryType deliveryType = this.deliverytypeservice.findByDeliveryTypeID(deliveryTypeID);
             Payment payment = this.paymentservice.findByPaymentID(paymentID);
@@ -83,18 +85,34 @@ public class orderServiceImpl implements orderService{
 
             int totalPrice = 0;
             List<OrderItem> orderItems = new ArrayList<>();                         //set OrderItem và totalPrice từ cartItem cho order
-            for(CartItem cartItem : user.getCart().getCartItemList()){
+
+            if(bookID == 0){
+                for(CartItem cartItem : user.getCart().getCartItemList()){
+                    OrderItem orderItem = new OrderItem();
+                    orderItem.setOrders(orders);
+                    orderItem.setNumberOfOrderItem(cartItem.getNumberOfCartItem());
+                    orderItem.setPrice(cartItem.getPrice());
+                    orderItem.setBook(cartItem.getBook());
+                    cartItem.getBook().getOrderItemList().add(orderItem);
+                    orderItems.add(orderItem);
+
+                    totalPrice += cartItem.getPrice();
+                }
+            }else {
+                Book book = this.bookservice.findByBookID(bookID);
                 OrderItem orderItem = new OrderItem();
                 orderItem.setOrders(orders);
-                orderItem.setNumberOfOrderItem(cartItem.getNumberOfCartItem());
-                orderItem.setPrice(cartItem.getPrice());
-                orderItem.setBook(cartItem.getBook());
-                cartItem.getBook().getOrderItemList().add(orderItem);
+                orderItem.setNumberOfOrderItem(0);
+                orderItem.setPrice(book.getPrice()* numberOfBook);
+                orderItem.setBook(book);
+                book.getOrderItemList().add(orderItem);
+
                 orderItems.add(orderItem);
 
-
-                totalPrice += cartItem.getPrice();
+                totalPrice += book.getPrice() * numberOfBook;
             }
+
+
             totalPrice += deliveryType.getPriceOfDeliveryType();
             totalPrice += payment.getPriceOfPayment();
             orders.setOrderItemList(orderItems);
@@ -176,6 +194,11 @@ public class orderServiceImpl implements orderService{
         }catch (Exception e){
             throw e;
         }
+    }
+
+    @Override
+    public List<Orders> findByDeliveryDateAndOrderStatus(Date deleveryDate, String orderStatus) {
+        return this.orderrepository.findByDeliveryDateAndOrderStatus(deleveryDate, orderStatus);
     }
 
     @Override

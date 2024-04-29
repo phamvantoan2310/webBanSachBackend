@@ -1,14 +1,18 @@
 package com.phamvantoan.webBanSachBackend.controller;
 
+import com.phamvantoan.webBanSachBackend.entity.Meeting;
 import com.phamvantoan.webBanSachBackend.entity.Notification;
+import com.phamvantoan.webBanSachBackend.entity.Revenue;
 import com.phamvantoan.webBanSachBackend.entity.User;
-import com.phamvantoan.webBanSachBackend.service.JwtService;
-import com.phamvantoan.webBanSachBackend.service.adminService;
-import com.phamvantoan.webBanSachBackend.service.userService;
+import com.phamvantoan.webBanSachBackend.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:3000")
@@ -17,11 +21,15 @@ public class adminController {
     private adminService adminservice;
     private JwtService jwtService;
     private userService userservice;
+    private meetingService meetingservice;
+    private revenueService revenueservice;
     @Autowired
-    public adminController(adminService adminservice, JwtService jwtService, userService userservice){
+    public adminController(adminService adminservice, JwtService jwtService, userService userservice, meetingService meetingservice, revenueService revenueservice){
         this.adminservice = adminservice;
         this.jwtService = jwtService;
         this.userservice = userservice;
+        this.meetingservice = meetingservice;
+        this.revenueservice = revenueservice;
     }
 
     @PostMapping("/addbook")
@@ -47,4 +55,20 @@ public class adminController {
         return ResponseEntity.badRequest().body(new Notification("gặp lỗi khi thêm sách"));
     }
 
+    @PostMapping("/createmeeting")
+    public ResponseEntity<?> createMeeting(@RequestBody createMeetingResponse createmeetingresponse){
+        return meetingservice.createMeeting(createmeetingresponse.getMeeting(), createmeetingresponse.getStaffIDs());
+    }
+    @DeleteMapping("/cancelmeeting")
+    public ResponseEntity<?> cancelMeeting(@RequestBody int meetingID){
+        return this.meetingservice.cancelMeeting(meetingID);
+    }
+    @GetMapping("/getrevenuebyrevenuedate")
+    public Revenue getRevenueByRevenueDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate revenueDate){
+        return this.revenueservice.getByRevenueDate(revenueDate);
+    }
+    @PutMapping("/updatestaff")
+    public ResponseEntity<?> updateStaff(@Validated @RequestBody User user){
+        return this.userservice.adminUpdateStaff(user);
+    }
 }

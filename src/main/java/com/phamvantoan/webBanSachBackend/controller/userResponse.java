@@ -1,15 +1,14 @@
 package com.phamvantoan.webBanSachBackend.controller;
 
+import com.phamvantoan.webBanSachBackend.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class createOrderResponse {
-    private int deliveryTypeID;
-    private int paymentID;
-    private int bookID;
-    private int numberOfBook;
+@AllArgsConstructor
+public class userResponse {
+    private User user;
+    private int role;
 }

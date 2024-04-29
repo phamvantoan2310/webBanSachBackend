@@ -55,11 +55,20 @@ public class endpoints {
     protected static final String[] ADMIN_GET_ENDPOINTS = {
             "/users",
             "/users/**",
+            "/admin/getrevenuebyrevenuedate",
     };
     protected static final String[] ADMIN_POST_ENDPOINTS = {
             "/books",
             "/books/**",
+            "/admin/createmeeting",
+    };
 
+    protected static final String[] ADMIN_PUT_ENDPOINTS = {
+            "/admin/updatestaff",
+    };
+
+    protected static final String[] ADMIN_DELETE_ENDPOINTS = {
+            "/admin/cancelmeeting",
     };
 
     protected  static final String[] STAFF_GET_ENDPOINT = {

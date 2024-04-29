@@ -28,8 +28,8 @@ public class accountController {
 
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Validated @RequestBody User user){
-        ResponseEntity<?> response = accountservice.registerUser(user);
+    public ResponseEntity<?> register(@Validated @RequestBody userResponse userResponse){
+        ResponseEntity<?> response = accountservice.registerUser(userResponse.getUser(), userResponse.getRole());
         return response;
     }
     @GetMapping("/activate")

@@ -28,7 +28,7 @@ public class accountServiceIpm implements accountService {
     private String activationUrl;
 
     @Override
-    public ResponseEntity<?> registerUser(User user){
+    public ResponseEntity<?> registerUser(User user, int role){
         if(userservice.existsByUserName(user.getUserName())){
             return ResponseEntity.badRequest().body(new Notification("Tên đăng nhập đã tồn tại"));
         }
@@ -48,7 +48,7 @@ public class accountServiceIpm implements accountService {
         cart.setUser(user);
         cart.setDeliveryAddress(user.getAddress());
         user.setCart(cart);
-        this.userservice.save(user);
+        this.userservice.save(user, role);
 
         sendEmail(user.getEmail(), user.getActivationCode());
         return ResponseEntity.ok("Đăng ký thành công");
@@ -79,7 +79,7 @@ public class accountServiceIpm implements accountService {
 
         if(activationCode.equals(user.getActivationCode())){
             user.setAccountStatus(true);
-            this.userservice.save(user);
+            this.userservice.save(user, 0);
             return ResponseEntity.ok("Kích hoạt tài khoản thành công");
         }else {
             return ResponseEntity.badRequest().body(new Notification("Sai mã kích hoạt"));

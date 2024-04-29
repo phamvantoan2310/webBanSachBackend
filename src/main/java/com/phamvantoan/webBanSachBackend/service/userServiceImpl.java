@@ -83,14 +83,15 @@ public class userServiceImpl implements userService{
     }
 
     @Override
-    public User save(User user) {
-        Role role = this.roleservice.findByRoleID(3);
-        role.getUserList().add(user);
-        if(user.getRoleList() == null){
-            List<Role> roles = new ArrayList<>();
-            user.setRoleList(roles);
+    public User save(User user, int roleUser) {
+        if(roleUser != 0){
+            Role role = this.roleservice.findByRoleID(roleUser);
+            if(user.getRoleList() == null){
+                List<Role> roles = new ArrayList<>();
+                user.setRoleList(roles);
+            }
+            user.getRoleList().add(role);
         }
-        user.getRoleList().add(role);
         return this.userrepository.save(user);
     }
 
@@ -197,6 +198,42 @@ public class userServiceImpl implements userService{
             }
             this.userrepository.delete(user);
             return ResponseEntity.ok("Xóa khách hàng thành công");
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @Override
+    public User findByUserID(int userID) {
+        return this.userrepository.findByUserID(userID);
+    }
+
+    @Override
+    public ResponseEntity<?> adminUpdateStaff(User user) {
+        try {
+            if(user != null){
+                User user1 = this.userrepository.findByUserID(user.getUserID());
+                if(user.getUserName() != ""){
+                    user1.setUserName(user.getUserName());
+                }
+                if(user.getPhoneNumber() != ""){
+                    user1.setPhoneNumber(user.getPhoneNumber());
+                }
+                if(user.getEmail() != ""){
+                    user1.setEmail(user.getEmail());
+                }
+                if(user.getAddress() != ""){
+                    user1.setAddress(user.getAddress());
+                }
+                if(user.getAvatar() != ""){
+                    user1.setAvatar(user.getAvatar());
+                }
+
+                this.userrepository.save(user1);
+                return ResponseEntity.ok("Update staff thành công");
+            }else {
+                return ResponseEntity.badRequest().body("Update thất bại do không có staff");
+            }
         }catch (Exception e){
             throw e;
         }

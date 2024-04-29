@@ -166,7 +166,7 @@ public class userController {
                 if(userName != null){
                     User user = this.userservice.findByUserName(userName);
 
-                    this.orderservice.createOrder(user, createorderresponse.getDeliveryTypeID(), createorderresponse.getPaymentID());
+                    this.orderservice.createOrder(user, createorderresponse.getDeliveryTypeID(), createorderresponse.getPaymentID(), createorderresponse.getBookID(), createorderresponse.getNumberOfBook());
                     return ResponseEntity.ok("Tạo order thành công");
                 }else {
                     return ResponseEntity.badRequest().body("Lỗi khi lấy userName");

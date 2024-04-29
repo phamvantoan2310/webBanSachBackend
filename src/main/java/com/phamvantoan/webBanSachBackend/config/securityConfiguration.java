@@ -49,6 +49,8 @@ public class securityConfiguration implements RepositoryRestConfigurer{
                         .requestMatchers(HttpMethod.POST,endpoints.PUBLIC_POST_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, endpoints.ADMIN_GET_ENDPOINTS).hasAnyAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, endpoints.ADMIN_POST_ENDPOINTS).hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, endpoints.ADMIN_PUT_ENDPOINTS).hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, endpoints.ADMIN_DELETE_ENDPOINTS).hasAnyAuthority("ADMIN")
                         .requestMatchers(HttpMethod.GET, endpoints.STAFF_GET_ENDPOINT).hasAnyAuthority("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.POST, endpoints.STAFF_POST_ENDPOINT).hasAnyAuthority("ADMIN", "STAFF")
                         .requestMatchers(HttpMethod.PUT, endpoints.STAFF_PUT_ENDPOINT).hasAnyAuthority("ADMIN", "STAFF")
