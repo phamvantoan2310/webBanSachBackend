@@ -30,6 +30,12 @@ public class Orders {
     @Column(name = "delivery_date")
     private Date deliveryDate;
 
+    @Column(name = "delivery_phone_number")
+    private String deliveryPhoneNumber;
+
+    @Column(name = "delivery_user_name")
+    private String deliveryUserName;
+
     @ManyToOne(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

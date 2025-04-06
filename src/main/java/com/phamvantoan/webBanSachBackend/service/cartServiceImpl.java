@@ -50,30 +50,43 @@ public class cartServiceImpl implements cartService{
         return ResponseEntity.ok("Xóa thành công");
     }
     @Override
-    public ResponseEntity<?> deleteAllCartItem(int cartID){
+    public ResponseEntity<?> deleteAllCartItem(int cartID, int userID){
         Cart cart = this.cartrepository.findByCartID(cartID);
 
-        List<CartItem> cartItems = new ArrayList<>();
+        if(userID == cart.getUser().getUserID()){
+            List<CartItem> cartItems = new ArrayList<>();
 
-        for(CartItem cartItem : cart.getCartItemList()){
-            cartItem.getBook().getCartItemList().remove(cartItem);
-            cartItems.add(cartItem);
-        }
+            for(CartItem cartItem : cart.getCartItemList()){
+                cartItem.getBook().getCartItemList().remove(cartItem);
+                cartItems.add(cartItem);
+            }
 
-        for(CartItem cartItem : cartItems){
-            cart.getCartItemList().remove(cartItem);
-            this.cartitemrepository.delete(cartItem);
+            for(CartItem cartItem : cartItems){
+                cart.getCartItemList().remove(cartItem);
+                this.cartitemrepository.delete(cartItem);
+            }
+            return ResponseEntity.ok("Xóa thành công");
+        }else {
+            return ResponseEntity.ok("Người dùng không có quyền xóa!");
         }
-        return ResponseEntity.ok("Xóa thành công");
     }
 
     @Override
-    public ResponseEntity<?> deleteCart(int cartID) {
+    public ResponseEntity<?> deleteCart(int cartID, int userID) {
         Cart cart = this.cartrepository.findByCartID(cartID);
-        deleteAllCartItem(cartID);
+        deleteAllCartItem(cartID, userID);
         cart.getUser().setCart(null);
         cart.setUser(null);
         this.cartrepository.delete(cart);
         return ResponseEntity.ok("Xóa giỏ hàng thành công");
+    }
+
+    @Override
+    public ResponseEntity<?> updateNumberOfCartItem(int cartItemID, int numberOfBook) {
+        CartItem cartItem = this.cartitemrepository.findByCartItemID(cartItemID);
+        cartItem.setNumberOfCartItem(numberOfBook);
+
+        this.cartitemrepository.save(cartItem);
+        return ResponseEntity.ok("cập nhật cartitem thành công");
     }
 }

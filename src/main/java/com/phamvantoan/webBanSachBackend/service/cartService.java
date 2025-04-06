@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 public interface cartService {
     public ResponseEntity<?> addCartItem(int numberOfBook, int bookID, Cart cart);
     public ResponseEntity<?> deleteCartItem(int cartItemID);
-    public ResponseEntity<?> deleteAllCartItem(int cartID);
-    public ResponseEntity<?> deleteCart(int cartID);
+    public ResponseEntity<?> deleteAllCartItem(int cartID, int userID);
+    public ResponseEntity<?> deleteCart(int cartID, int userID);
+    public ResponseEntity<?> updateNumberOfCartItem(int cartItemID, int numberOfBook);
 }

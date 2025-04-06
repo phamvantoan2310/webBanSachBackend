@@ -12,5 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RepositoryRestResource(path = "authors")
 public interface authorRepository extends JpaRepository<Author, Integer> {
     Page<Author> findByAuthorNameContaining(@RequestParam("authorName") String authorName, Pageable pageable);
+    public boolean existsByAuthorName(String authorName);
     public Author findByAuthorID(int authorID);
 }

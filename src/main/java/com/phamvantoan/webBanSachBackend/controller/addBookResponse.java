@@ -14,4 +14,5 @@ public class addBookResponse {
     private Book book;
     private List<Image> images;
     private int categoryID;
+    private int authorID;
 }

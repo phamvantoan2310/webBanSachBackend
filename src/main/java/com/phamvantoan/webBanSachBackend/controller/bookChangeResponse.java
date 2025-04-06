@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 public class bookChangeResponse {
     private Book book;
     private int authorID;
+    private int categoryID;
 }

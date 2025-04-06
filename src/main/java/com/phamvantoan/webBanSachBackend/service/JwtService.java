@@ -28,27 +28,27 @@ public class JwtService {
     public String generateToken(String username, int userID){
         Map<String, Object> claims = new HashMap<>();
 
-        User user = this.userservice.findByUserName(username); //
-        boolean isAdmin = false;                               //
-        boolean isStaff = false;                               //
-        boolean isUser = false;                                //
-        if(user!=null && user.getRoleList().size() > 0){       //
-            List<Role> roleList = user.getRoleList();          //
-            for (Role role : roleList){                        //
-                if(role.getRoleName().equals("ADMIN")){        //
-                    isAdmin = true;                            //
-                }                                              // lấy role gửi cho frontend
-                if(role.getRoleName().equals("STAFF")){        //
-                    isStaff = true;                            //
-                }                                              //
-                if(role.getRoleName().equals("USER")){         //
-                    isUser = true;                             //
-                }                                              //
-            }                                                  //
-        }                                                      //
-        claims.put("isAdmin", isAdmin);                        //
-        claims.put("isStaff", isStaff);                        //
-        claims.put("isUser", isUser);                          //
+        User user = this.userservice.findByUserName(username);
+        boolean isAdmin = false;
+        boolean isStaff = false;
+        boolean isUser = false;
+        if(user!=null && user.getRoleList().size() > 0){
+            List<Role> roleList = user.getRoleList();
+            for (Role role : roleList){
+                if(role.getRoleName().equals("ADMIN")){
+                    isAdmin = true;
+                }
+                if(role.getRoleName().equals("STAFF")){
+                    isStaff = true;
+                }
+                if(role.getRoleName().equals("CUSTOMER")){
+                    isUser = true;
+                }
+            }
+        }
+        claims.put("isAdmin", isAdmin);
+        claims.put("isStaff", isStaff);
+        claims.put("isUser", isUser);
 
         return createToken(claims, username, userID);
     }
@@ -59,8 +59,8 @@ public class JwtService {
                 .setClaims(claims)  //set claims
                 .setSubject(username) //set subject là tên đăng nhập
                 .setId(String.valueOf(userID))
-                .setIssuedAt(new Date(System.currentTimeMillis())) //set thời gian ban hành
-                .setExpiration(new Date(System.currentTimeMillis()+24*60*60*1000)) //set thời gian hết hạn 1 ngày
+                .setIssuedAt(new Date(System.currentTimeMillis())) //thời gian ban hành
+                .setExpiration(new Date(System.currentTimeMillis()+24*60*60*1000)) //thời gian hết hạn 1 ngày
                 .signWith(SignatureAlgorithm.HS256, getSigneKey())
                 .compact();
     }

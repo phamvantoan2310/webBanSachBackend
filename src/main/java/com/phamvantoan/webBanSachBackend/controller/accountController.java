@@ -43,16 +43,61 @@ public class accountController {
         try {
             Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginrequest.getUserName(), loginrequest.getPassword()));
 
-            //nếu xác thực thành công thì tạo token
             if(authentication.isAuthenticated()){
                 User user = this.userservice.findByUserName(loginrequest.getUserName());
                 final String jwt = jwtService.generateToken(loginrequest.getUserName(), user.getUserID());
-                //gửi token cho frontend
+
                 return ResponseEntity.ok(new JwtResponse(jwt));
             }
         }catch (AuthenticationException e){
             return ResponseEntity.badRequest().body("tên đăng nhập hoặc mật khẩu không đúng");
         }
         return ResponseEntity.badRequest().body("Xác thực không thành công");
+    }
+
+    @PutMapping("/reactivate")
+    public ResponseEntity<?> reactivate(@Validated @RequestBody int userID){
+        ResponseEntity<?> response = accountservice.reactivate(userID);
+        return response;
+    }
+
+    @PutMapping("/changepassword")
+    public ResponseEntity<?> changePassword(@RequestBody changePasswordResponse changePasswordResponse, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    User user = this.userservice.findByUserName(userName);
+                    System.out.println(changePasswordResponse + ":" + user.getUserID());
+                    return this.userservice.changePassword(changePasswordResponse.getOldPassword(), changePasswordResponse.getNewPassword(), user.getUserID());
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
+    @PostMapping("/sendOTP")
+    public void sendOTP(@RequestParam String email){
+        this.accountservice.sendOTP(email);
+    }
+
+    @PostMapping("/checkOTP")
+    public ResponseEntity<?> checkOTP(@RequestParam String email, @RequestParam String otp){
+        return this.accountservice.checkOTP(email, otp);
+    }
+
+    @PutMapping("/changepasswordwhenforgotpassword")
+    public ResponseEntity<?> changePasswordWhenForgotPassword(@RequestBody changePasswordWhenForgotPasswordResponse changePasswordWhenForgotPasswordResponse){
+        if(this.userservice.existsByEmail(changePasswordWhenForgotPasswordResponse.getEmail())){
+            User user = this.userservice.findByEmail(changePasswordWhenForgotPasswordResponse.getEmail());
+            return this.userservice.changePasswordWhenForgotPassword(changePasswordWhenForgotPasswordResponse.getNewPassword(), user.getUserID());
+        }else {
+            return ResponseEntity.badRequest().body("Email chưa được đăng ký");
+        }
     }
 }

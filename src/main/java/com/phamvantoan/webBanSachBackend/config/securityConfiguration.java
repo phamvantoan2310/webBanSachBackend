@@ -47,6 +47,8 @@ public class securityConfiguration implements RepositoryRestConfigurer{
                 config->config
                         .requestMatchers(HttpMethod.GET, endpoints.PUBLIC_GET_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.POST,endpoints.PUBLIC_POST_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.PUT,endpoints.PUBLIC_PUT_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.DELETE,endpoints.PUBLIC_DELETE_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, endpoints.ADMIN_GET_ENDPOINTS).hasAnyAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, endpoints.ADMIN_POST_ENDPOINTS).hasAnyAuthority("ADMIN")
                         .requestMatchers(HttpMethod.PUT, endpoints.ADMIN_PUT_ENDPOINTS).hasAnyAuthority("ADMIN")
@@ -86,13 +88,12 @@ public class securityConfiguration implements RepositoryRestConfigurer{
         HttpMethod[] putMethod = {HttpMethod.PUT};
     }
 
-    private void disableMethod(Class c, RepositoryRestConfiguration config, HttpMethod[] methods){  // phương thức dùng để chặn các truy cập đến entity
-        config.getExposureConfiguration().forDomainType(c).withItemExposure((metdata, httpMethods) -> httpMethods.disable(methods)).withCollectionExposure((metdata, httpMethods) -> httpMethods.disable(methods));
-    }
+//    private void disableMethod(Class c, RepositoryRestConfiguration config, HttpMethod[] methods){  // phương thức dùng để chặn các truy cập đến entity
+//        config.getExposureConfiguration().forDomainType(c).withItemExposure((metdata, httpMethods) -> httpMethods.disable(methods)).withCollectionExposure((metdata, httpMethods) -> httpMethods.disable(methods));
+//    }
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
         return config.getAuthenticationManager();
     }
-
 }

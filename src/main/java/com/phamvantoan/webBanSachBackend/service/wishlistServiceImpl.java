@@ -28,20 +28,23 @@ public class wishlistServiceImpl implements wishlistService{
     }
 
     @Override
-    public ResponseEntity<?> deleteWishList(int wishListID) {
+    public ResponseEntity<?> deleteWishList(int wishListID, int userID) {
         WishList wishList = this.wishlistrepository.findByWishListID(wishListID);  //xóa book trong wistList
-        List<Book> books = wishList.getBookList();
-        for(Book book : books){
-            book.getListWishList().remove(wishList);
-        }
 
         User user = wishList.getUser();
-        if(user != null){                                                           //xóa wishlist trong user
-            user.getWishListList().remove(wishList);
+        if(user.getUserID() == userID){
+            List<Book> books = wishList.getBookList();
+            for(Book book : books){
+                book.getListWishList().remove(wishList);
+            }
 
-            wishList.setUser(null);
+            if(user != null){                                                           //xóa wishlist trong user
+                user.getWishListList().remove(wishList);
+
+                wishList.setUser(null);
+            }
+            this.wishlistrepository.deleteById(wishListID);
         }
-        this.wishlistrepository.deleteById(wishListID);
         return ResponseEntity.ok("Xóa wishlist thành công");
     }
 
@@ -74,7 +77,6 @@ public class wishlistServiceImpl implements wishlistService{
     @Override
     public ResponseEntity<?> RemoveBookInWishList(bookToWishListResponse booktowishlistresponse) {
         if(booktowishlistresponse != null){
-            System.out.println("WistListID: "+booktowishlistresponse.getWishListID() + "WistListID: "+booktowishlistresponse.getBookID());
             WishList wishList = this.wishlistrepository.findByWishListID(booktowishlistresponse.getWishListID());
 
             for(Book book : wishList.getBookList()){
@@ -88,6 +90,22 @@ public class wishlistServiceImpl implements wishlistService{
             return ResponseEntity.badRequest().body("Xóa sách thất bại");
         }else {
             return ResponseEntity.badRequest().body("Xóa sách không thành công");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> changeWishlistName(int wishListID, String wishlistName, int userID) {
+        WishList wishList = this.wishlistrepository.findByWishListID(wishListID);
+        if(wishList != null){
+            if(wishList.getUser().getUserID() == userID){
+                wishList.setWishlistName(wishlistName);
+                this.wishlistrepository.save(wishList);
+                return ResponseEntity.badRequest().body("Đổi tên danh sách yêu thích thành công");
+            }else {
+                return ResponseEntity.badRequest().body("Người dùng không hợp lệ!");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("danh sách yêu thích không tồn tại!");
         }
     }
 }

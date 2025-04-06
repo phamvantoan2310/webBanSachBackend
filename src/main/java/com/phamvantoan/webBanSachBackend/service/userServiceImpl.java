@@ -8,6 +8,7 @@ import com.phamvantoan.webBanSachBackend.dao.userRepository;
 import com.phamvantoan.webBanSachBackend.dao.wishListRepository;
 import com.phamvantoan.webBanSachBackend.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
@@ -34,9 +35,9 @@ public class userServiceImpl implements userService{
     private cartService cartservice;
     private orderService orderservice;
     private reportService reportservice;
-    private meetingService meetingservice;
+    private emailService emailService;
     @Autowired
-    public userServiceImpl(userRepository userrepository, roleService roleservice,@Lazy BCryptPasswordEncoder passwordEncoder,@Lazy wishlistService wishlistservice,@Lazy evaluateService evaluateservice,@Lazy cartService cartservice,@Lazy orderService orderservice,@Lazy reportService reportservice, @Lazy meetingService meetingservice){
+    public userServiceImpl(userRepository userrepository, roleService roleservice,@Lazy BCryptPasswordEncoder passwordEncoder,@Lazy wishlistService wishlistservice,@Lazy evaluateService evaluateservice,@Lazy cartService cartservice,@Lazy orderService orderservice,@Lazy reportService reportservice, @Lazy emailService emailService){
         this.userrepository = userrepository;
         this.roleservice = roleservice;
         this.passwordEncoder = passwordEncoder;
@@ -45,8 +46,11 @@ public class userServiceImpl implements userService{
         this.evaluateservice = evaluateservice;
         this.orderservice = orderservice;
         this.reportservice = reportservice;
-        this.meetingservice = meetingservice;
+        this.emailService = emailService;
     }
+
+    @Value("${email.sender}")
+    private String emailSender;
 
     @Override
     public User findByUserName(String userName) {
@@ -69,6 +73,9 @@ public class userServiceImpl implements userService{
 
     @Override
     public ResponseEntity<?> changeInformationUser(User user, changeInformationUserResponse changeinformationuserresponse) {
+        if(changeinformationuserresponse.getUserName()!=""){
+            user.setUserName(changeinformationuserresponse.getUserName());
+        }
         if(changeinformationuserresponse.getPhoneNumber()!=""){
             user.setPhoneNumber(changeinformationuserresponse.getPhoneNumber());
         }
@@ -137,6 +144,7 @@ public class userServiceImpl implements userService{
                     user1.setSex(false);
                 }
                 this.userrepository.save(user1);
+                this.emailService.sendMessage(emailSender, user1.getEmail(), "Thông báo thay đổi thông tin tài khoản", "Quản trị viên đã thay đổi thông tin tài khoản của bạn tại Bookstore, đăng nhập để xem thay đổi mới nhất.");
                 return ResponseEntity.ok("Update user thành công");
             }else {
                 return ResponseEntity.badRequest().body("Update thất bại do không có user");
@@ -147,7 +155,7 @@ public class userServiceImpl implements userService{
     }
 
     @Override
-    public ResponseEntity<?> deleteUser(int userID) {
+    public ResponseEntity<?> deleteUser(int userID, int userIDInToken) {
         try {
             User user = this.userrepository.findByUserID(userID);
 
@@ -155,7 +163,6 @@ public class userServiceImpl implements userService{
             List<Evaluate> evaluates = new ArrayList<>();
             List<Report> reports =new ArrayList<>() ;
             List<Orders> orders = new ArrayList<>();
-            List<Meeting> meetings = new ArrayList<>();
 
             for(WishList wishList : user.getWishListList()){
                 wishLists.add(wishList);
@@ -171,20 +178,17 @@ public class userServiceImpl implements userService{
             }
 
 
-            for (Meeting meeting: user.getMeetingList()){
-                this.meetingservice.deleteMeeting(meeting.getMeetingID());
-            }
             for(WishList wishList : wishLists){
-                this.wishlistservice.deleteWishList(wishList.getWishListID());
+                this.wishlistservice.deleteWishList(wishList.getWishListID(), userID);
             }
             for(Evaluate evaluate : evaluates){
                 this.evaluateservice.deleteEvaluate(evaluate.getEvaluateID());
             }
             if(user.getCart() != null){
-                this.cartservice.deleteCart(user.getCart().getCartID());
+                this.cartservice.deleteCart(user.getCart().getCartID(), userIDInToken);
             }
             for(Orders order : orders){
-                this.orderservice.deleteOrder(order.getOrderID());
+                this.orderservice.deleteOrder(order.getOrderID(), userID);
             }
             for(Report report : reports){
                 this.reportservice.deleteReport(report);
@@ -192,10 +196,11 @@ public class userServiceImpl implements userService{
             Iterator<Role> iterator = user.getRoleList().iterator();
             while (iterator.hasNext()) {
                 Role role = iterator.next();
-                role.getUserList().remove(user); // Xóa user khỏi danh sách user của role
+                role.getUserList().remove(user);
 
-                iterator.remove(); // Xóa role khỏi danh sách role của user
+                iterator.remove();
             }
+            this.emailService.sendMessage(emailSender, user.getEmail(), "Thông báo cập nhật thông tin tài khoản.", "Quản trị viên đã xóa tài khoản của bạn tại Bookstore, vui lòng liên hệ với chúng tôi qua số điện thoại để biết thêm chi tiết.");
             this.userrepository.delete(user);
             return ResponseEntity.ok("Xóa khách hàng thành công");
         }catch (Exception e){
@@ -230,6 +235,7 @@ public class userServiceImpl implements userService{
                 }
 
                 this.userrepository.save(user1);
+                this.emailService.sendMessage(emailSender, user1.getEmail(), "Thông báo thay đổi thông tin tài khoản", "Quản trị viên đã thay đổi thông tin tài khoản của bạn tại Bookstore, đăng nhập để xem thay đổi mới nhất.");
                 return ResponseEntity.ok("Update staff thành công");
             }else {
                 return ResponseEntity.badRequest().body("Update thất bại do không có staff");
@@ -237,5 +243,30 @@ public class userServiceImpl implements userService{
         }catch (Exception e){
             throw e;
         }
+    }
+
+    @Override
+    public ResponseEntity<?> changePassword(String oldPassword, String newPassword, int userID) {
+        User user = this.userrepository.findByUserID(userID);
+        if(user != null){
+            if(passwordEncoder.matches(oldPassword, user.getPassword())){
+                String bcryptEncoder = passwordEncoder.encode(newPassword);
+                user.setPassword(bcryptEncoder);
+                this.userrepository.save(user);
+                return ResponseEntity.ok("Cập nhật mật khẩu thành công");
+            }else {
+                return ResponseEntity.badRequest().body("Sai mật khẩu!");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Mã người dùng không hợp lệ!");
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> changePasswordWhenForgotPassword(String newPassword, int userID) {
+        User user = this.userrepository.findByUserID(userID);
+        user.setPassword(this.passwordEncoder.encode(newPassword));
+        this.userrepository.save(user);
+        return ResponseEntity.ok("Đổi mật khẩu thành công");
     }
 }

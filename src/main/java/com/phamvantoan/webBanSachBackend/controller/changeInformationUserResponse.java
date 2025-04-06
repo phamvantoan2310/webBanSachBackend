@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class changeInformationUserResponse {
+    private String userName;
     private String phoneNumber;
     private String email;
     private String address;

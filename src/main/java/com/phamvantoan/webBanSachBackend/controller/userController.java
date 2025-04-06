@@ -5,6 +5,7 @@ import com.phamvantoan.webBanSachBackend.entity.*;
 import com.phamvantoan.webBanSachBackend.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -55,24 +56,75 @@ public class userController {
             return ResponseEntity.badRequest().body("Không lấy được token");
         }
     }
-    @PostMapping("/deletewishlist")
+    @DeleteMapping("/deletewishlist")
     public ResponseEntity<?> deleteWishList(@RequestBody int wishListID, @RequestHeader("Authorization") String authorizationHeader){
             try {
-                this.wishlistservice.deleteWishList(wishListID);
-                return ResponseEntity.ok("Xóa wishlist thành công");
+                if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+                    String token = authorizationHeader.substring(7);
+                    if(token != null){
+                        String userName = this.jwtService.extractUserName(token);
+                        UserDetails userDetails = this.userservice.loadUserByUsername(userName);
+                        if(userName != null && this.jwtService.validateToken(token, userDetails)){
+                            User user1 = this.userservice.findByUserName((userName));
+                            if(user1 != null){
+                                this.wishlistservice.deleteWishList(wishListID, user1.getUserID());
+                                return ResponseEntity.ok("Xóa danh sách yêu thích thành công");
+                            }
+                        }else {
+                            return ResponseEntity.badRequest().body(new Notification("Lỗi khi lấy user name"));
+                        }
+                    }else {
+                        return ResponseEntity.badRequest().body(new Notification("Không lấy được token"));
+                    }
+                }
+                return ResponseEntity.badRequest().body(new Notification("gặp lỗi khi xóa danh sách yêu thích"));
             }catch (Exception e){
                 throw e;
             }
     }
 
-    @PostMapping("/addbooktowishlist")
+    @PutMapping("/addbooktowishlist")
     public ResponseEntity<?> addBookToWishList(@RequestBody bookToWishListResponse booktowishlistresponse, @RequestHeader("Authorization") String authorizationHeader){
-        return this.wishlistservice.addBookToWishList(booktowishlistresponse);
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                UserDetails userDetails = this.userservice.loadUserByUsername(userName);
+                if(userName != null && this.jwtService.validateToken(token, userDetails)){
+                    User user1 = this.userservice.findByUserName((userName));
+                    if(user1 != null){
+                        return this.wishlistservice.addBookToWishList(booktowishlistresponse);
+                    }
+                }else {
+                    return ResponseEntity.badRequest().body(new Notification("Lỗi khi lấy user name"));
+                }
+            }else {
+                return ResponseEntity.badRequest().body(new Notification("Không lấy được token"));
+            }
+        }
+        return ResponseEntity.badRequest().body(new Notification("gặp lỗi khi thêm sách vào danh sách yêu thích"));
     }
 
-    @PostMapping("/removebookinwishlist")
+    @PutMapping("/removebookinwishlist")
     public ResponseEntity<?> RemoveBookInWishList(@RequestBody bookToWishListResponse booktowishlistresponse, @RequestHeader("Authorization") String authorizationHeader){
-        return this.wishlistservice.RemoveBookInWishList(booktowishlistresponse);
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                UserDetails userDetails = this.userservice.loadUserByUsername(userName);
+                if(userName != null && this.jwtService.validateToken(token, userDetails)){
+                    User user1 = this.userservice.findByUserName((userName));
+                    if(user1 != null){
+                        return this.wishlistservice.RemoveBookInWishList(booktowishlistresponse);
+                    }
+                }else {
+                    return ResponseEntity.badRequest().body(new Notification("Lỗi khi lấy user name"));
+                }
+            }else {
+                return ResponseEntity.badRequest().body(new Notification("Không lấy được token"));
+            }
+        }
+        return ResponseEntity.badRequest().body(new Notification("gặp lỗi khi xóa sách khỏi danh sách yêu thích"));
     }
     @PostMapping("/addCartItem")
     public ResponseEntity<?> addCartItem(@RequestBody addCartItemResponse addcartitemresponse, @RequestHeader("Authorization") String authorizationHeader){
@@ -100,7 +152,7 @@ public class userController {
         }
     }
 
-    @PostMapping("/deleteCartItem")
+    @DeleteMapping("/deleteCartItem")
     public ResponseEntity<?> deleteCartItem(@RequestBody int cartItemID, @RequestHeader("Authorization") String authorizationHeader){
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             String token = authorizationHeader.substring(7);
@@ -120,16 +172,33 @@ public class userController {
         }
     }
 
-    @PostMapping("/deleteAllCartItem")
-    public ResponseEntity<?> deleteAllCartItem(@RequestBody int cartID){
+    @DeleteMapping("/deleteAllCartItem")
+    public ResponseEntity<?> deleteAllCartItem(@RequestBody int cartID, @RequestHeader("Authorization") String authorizationHeader){
         try {
-            this.cartservice.deleteAllCartItem(cartID);
-            return ResponseEntity.ok("Xóa tất cả cartItem thành công");
+            if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+                String token = authorizationHeader.substring(7);
+                if(token != null){
+                    String userName = this.jwtService.extractUserName(token);
+                    UserDetails userDetails = this.userservice.loadUserByUsername(userName);
+                    if(userName != null && this.jwtService.validateToken(token, userDetails)){
+                        User user1 = this.userservice.findByUserName((userName));
+                        if(user1 != null){
+                            this.cartservice.deleteAllCartItem(cartID, user1.getUserID());
+                            return ResponseEntity.ok("Xóa tất cả cartItem thành công");
+                        }
+                    }else {
+                        return ResponseEntity.badRequest().body(new Notification("Lỗi khi lấy user name"));
+                    }
+                }else {
+                    return ResponseEntity.badRequest().body(new Notification("Không lấy được token"));
+                }
+            }
+            return ResponseEntity.badRequest().body(new Notification("gặp lỗi khi xóa tất cả cartItem"));
         }catch (Exception e){
             throw e;
         }
     }
-    @PostMapping("/changeInformationUser")
+    @PutMapping("/changeInformationUser")
     public ResponseEntity<?> changeInformationUser(@RequestBody changeInformationUserResponse changeinformationuserresponse, @RequestHeader("Authorization") String authorizationHeader){
         if(authorizationHeader!= null && authorizationHeader.startsWith("Bearer ")){
             String token = authorizationHeader.substring(7);
@@ -148,11 +217,28 @@ public class userController {
             return ResponseEntity.badRequest().body("Lỗi khi lấy header");
         }
     }
-    @PostMapping("/deleteorder")
-    public ResponseEntity<?> deleteOrder(@RequestBody int orderID){
+    @DeleteMapping("/deleteorder")
+    public ResponseEntity<?> deleteOrder(@RequestBody int orderID, @RequestHeader("Authorization") String authorizationHeader){
         try {
-            this.orderservice.deleteOrder(orderID);
-            return ResponseEntity.ok("Xóa order thành công");
+            if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+                String token = authorizationHeader.substring(7);
+                if(token != null){
+                    String userName = this.jwtService.extractUserName(token);
+                    UserDetails userDetails = this.userservice.loadUserByUsername(userName);
+                    if(userName != null && this.jwtService.validateToken(token, userDetails)){
+                        User user1 = this.userservice.findByUserName((userName));
+                        if(user1 != null){
+                            this.orderservice.deleteOrder(orderID, user1.getUserID());
+                            return ResponseEntity.ok("Xóa order thành công");
+                        }
+                    }else {
+                        return ResponseEntity.badRequest().body(new Notification("Lỗi khi lấy user name"));
+                    }
+                }else {
+                    return ResponseEntity.badRequest().body(new Notification("Không lấy được token"));
+                }
+            }
+            return ResponseEntity.badRequest().body(new Notification("gặp lỗi khi xóa order"));
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e);
         }
@@ -165,8 +251,7 @@ public class userController {
                 String userName = this.jwtService.extractUserName(token);
                 if(userName != null){
                     User user = this.userservice.findByUserName(userName);
-
-                    this.orderservice.createOrder(user, createorderresponse.getDeliveryTypeID(), createorderresponse.getPaymentID(), createorderresponse.getBookID(), createorderresponse.getNumberOfBook());
+                    this.orderservice.createOrder(user, createorderresponse.getDeliveryTypeID(), createorderresponse.getPaymentID(), createorderresponse.getBookID(), createorderresponse.getNumberOfBook(), createorderresponse.getDeliveryAddress(), createorderresponse.getDeliveryPhoneNumber(), createorderresponse.getDeliveryUserName(), createorderresponse.getSelectedBooksResponse());
                     return ResponseEntity.ok("Tạo order thành công");
                 }else {
                     return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
@@ -219,7 +304,7 @@ public class userController {
             return ResponseEntity.badRequest().body("Lỗi khi lấy header");
         }
     }
-    @PostMapping("/completeorder")
+    @PutMapping("/completeorder")
     public ResponseEntity<?> completeOrder(@RequestBody int orderID, @RequestHeader("Authorization") String authorizationHeader){
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             String token = authorizationHeader.substring(7);
@@ -238,6 +323,64 @@ public class userController {
         }
     }
 
+    @PutMapping("/updateNumberOfCartItem")
+    public ResponseEntity<?> updateNumberOfCartItem(@RequestBody updateNumberOfCartItemResponse updateNumberOfCartItemResponse, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    System.out.println(updateNumberOfCartItemResponse);
+                    return this.cartservice.updateNumberOfCartItem(updateNumberOfCartItemResponse.getCartItemID(), updateNumberOfCartItemResponse.getNumberOfBook());
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
 
+    @PutMapping("/updateorderaddress")
+    public ResponseEntity<?> updateOrderAddress(@RequestBody updateOrderAddressResponse updateOrderAddressResponse, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    User user = this.userservice.findByUserName(userName);
+                    return this.orderservice.updateOrderAddress(updateOrderAddressResponse.getOrderID(), updateOrderAddressResponse.getOrderAddress(), user);
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
+
+    @PutMapping("/changewishlistname")
+    public ResponseEntity<?> updateWishlistName(@RequestBody changeWishListNameResponse changeWishListNameResponse, @RequestHeader("Authorization") String authorizationHeader){
+        if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
+            String token = authorizationHeader.substring(7);
+            if(token != null){
+                String userName = this.jwtService.extractUserName(token);
+                if(userName != null){
+                    User user = this.userservice.findByUserName(userName);
+                    return this.wishlistservice.changeWishlistName(changeWishListNameResponse.getWishlistID(), changeWishListNameResponse.getWishlistName(), user.getUserID());
+                }else {
+                    return ResponseEntity.badRequest().body("Lỗi khi lấy userName");
+                }
+            }else {
+                return ResponseEntity.badRequest().body("Lỗi khi lấy token");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Lỗi khi lấy header");
+        }
+    }
 
 }

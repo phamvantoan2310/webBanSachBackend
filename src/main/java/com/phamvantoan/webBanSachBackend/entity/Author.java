@@ -22,7 +22,8 @@ public class Author {
     @Column(name = "birthday")
     private Date birthday;
 
-    @Column(name = "decription")
+    @Column(name = "decription", columnDefinition = "LONGTEXT")
+    @Lob
     private String decription;
 
     @OneToMany(mappedBy = "author", fetch = FetchType.EAGER, cascade = CascadeType.ALL)

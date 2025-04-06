@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class evaluateServiceImpl implements evaluateService{
     private evaluateRepository evaluaterepository;
@@ -28,6 +30,15 @@ public class evaluateServiceImpl implements evaluateService{
         evaluate.setDecription(createevaluateresponse.getDecription());
         evaluate.setUser(user);
         user.getEvaluateList().add(evaluate);
+
+        List<Evaluate> evaluates = user.getEvaluateList();
+        int totalpoint = 0;
+        for (Evaluate evaluate1 : evaluates) {
+            totalpoint += evaluate1.getPoint();
+        }
+        int ratePoint = (int) (totalpoint / evaluates.size());
+        book.setPoint(ratePoint);
+
         evaluate.setBook(book);
         book.getEvaluateList().add(evaluate);
 

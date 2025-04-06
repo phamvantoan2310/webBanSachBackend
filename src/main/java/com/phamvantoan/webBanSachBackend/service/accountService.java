@@ -8,4 +8,8 @@ public interface accountService {
     public String createActivationCode();
     public void sendEmail(String email, String activationCode);
     public ResponseEntity<?> accountActivate(String email, String activationCode);
+    public void sendOTP(String toEmail);
+    public ResponseEntity<?> checkOTP(String toEmail, String otp);
+    public ResponseEntity<?> reactivate(int userID);
+
 }

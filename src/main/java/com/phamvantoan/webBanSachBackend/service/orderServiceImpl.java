@@ -1,5 +1,6 @@
 package com.phamvantoan.webBanSachBackend.service;
 
+import com.phamvantoan.webBanSachBackend.controller.selectedBooksResponse;
 import com.phamvantoan.webBanSachBackend.dao.*;
 import com.phamvantoan.webBanSachBackend.entity.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,36 +29,36 @@ public class orderServiceImpl implements orderService{
     private bookService bookservice;
 
     @Override
-    public ResponseEntity<?> deleteOrder(int orderID){
+    public ResponseEntity<?> deleteOrder(int orderID, int userID){
         try {
             Orders orders = this.orderrepository.findOrdersByOrderID(orderID);
-            orders.getUser().getOrderList().remove(orders);
+            if(orders.getUser().getUserID() == userID){
+                orders.getUser().getOrderList().remove(orders);
 
-            List<OrderItem> orderItems = new ArrayList<>();
+                List<OrderItem> orderItems = new ArrayList<>();
 
-            for(OrderItem orderItem : orders.getOrderItemList()){
-                orderItem.getBook().getOrderItemList().remove(orderItem);
-                orderItems.add(orderItem);
+                for(OrderItem orderItem : orders.getOrderItemList()){
+                    orderItem.getBook().getOrderItemList().remove(orderItem);
+                    orderItems.add(orderItem);
+                }
+
+                for(OrderItem orderItem : orderItems){
+                    orders.getOrderItemList().remove(orderItem);
+                    orderItem.setBook(null);
+                    this.orderitemrepository.delete(orderItem);
+                }
+
+                orders.getDeliveryType().getOrderList().remove(orders);
+                orders.setDeliveryType(null);
+
+                orders.getPayment().getOrderList().remove(orders);
+                orders.setPayment(null);
+
+                if(orders.getReport() != null){
+                    this.reportservice.deleteReport(orders.getReport());
+                }
+                this.orderrepository.delete(orders);
             }
-
-            for(OrderItem orderItem : orderItems){
-                orders.getOrderItemList().remove(orderItem);
-                orderItem.setBook(null);
-                this.orderitemrepository.delete(orderItem);
-            }
-
-            orders.getDeliveryType().getOrderList().remove(orders);
-            orders.setDeliveryType(null);
-
-            orders.getPayment().getOrderList().remove(orders);
-            orders.setPayment(null);
-
-            if(orders.getReport() != null){
-                this.reportservice.deleteReport(orders.getReport());
-            }
-
-            this.orderrepository.delete(orders);
-
         }catch (Exception e){
             throw e;
         }
@@ -69,7 +70,7 @@ public class orderServiceImpl implements orderService{
     }
     @Override
     @Transactional
-    public ResponseEntity<?> createOrder(User user, int deliveryTypeID, int paymentID, int bookID, int numberOfBook){
+    public ResponseEntity<?> createOrder(User user, int deliveryTypeID, int paymentID, int bookID, int numberOfBook, String deliveryAddress, String deliveryPhoneNumber, String deliveryUserName, List<selectedBooksResponse> selectedBooks){
         try{
             DeliveryType deliveryType = this.deliverytypeservice.findByDeliveryTypeID(deliveryTypeID);
             Payment payment = this.paymentservice.findByPaymentID(paymentID);
@@ -77,9 +78,11 @@ public class orderServiceImpl implements orderService{
             orders.setOrderDate(java.sql.Date.valueOf(getCurrentDate()));
             orders.setOrderStatus("Đang Chờ Xác Nhận");
             orders.setUser(user);
-            orders.setDeliveryAddress(user.getAddress());
+            orders.setDeliveryAddress(deliveryAddress);
             orders.setDeliveryType(deliveryType);
             orders.setPayment(payment);
+            orders.setDeliveryPhoneNumber(deliveryPhoneNumber);
+            orders.setDeliveryUserName(deliveryUserName);
 
             user.getOrderList().add(orders);                                        //set Order cho user
 
@@ -87,16 +90,18 @@ public class orderServiceImpl implements orderService{
             List<OrderItem> orderItems = new ArrayList<>();                         //set OrderItem và totalPrice từ cartItem cho order
 
             if(bookID == 0){
-                for(CartItem cartItem : user.getCart().getCartItemList()){
+                for(selectedBooksResponse selectedBook : selectedBooks){
                     OrderItem orderItem = new OrderItem();
                     orderItem.setOrders(orders);
-                    orderItem.setNumberOfOrderItem(cartItem.getNumberOfCartItem());
-                    orderItem.setPrice(cartItem.getPrice());
-                    orderItem.setBook(cartItem.getBook());
-                    cartItem.getBook().getOrderItemList().add(orderItem);
+
+                    Book book = this.bookservice.findByBookID(selectedBook.getBookID());
+                    orderItem.setNumberOfOrderItem(selectedBook.getNumberOfBooks());
+                    orderItem.setPrice(book.getPrice() * selectedBook.getNumberOfBooks());
+                    orderItem.setBook(book);
+//                    selectedBook.getBook().getOrderItemList().add(orderItem);//*****
                     orderItems.add(orderItem);
 
-                    totalPrice += cartItem.getPrice();
+                    totalPrice += book.getPrice() * selectedBook.getNumberOfBooks();
                 }
             }else {
                 Book book = this.bookservice.findByBookID(bookID);
@@ -188,6 +193,7 @@ public class orderServiceImpl implements orderService{
 
             for(OrderItem orderItem : orders.getOrderItemList()){ //set số lượng sách sau khi confirm đơn hàng
                 orderItem.getBook().setNumberOfBooks(orderItem.getBook().getNumberOfBooks() - orderItem.getNumberOfOrderItem());
+                orderItem.getBook().setQuantitySold(orderItem.getBook().getQuantitySold() + orderItem.getNumberOfOrderItem());
             }
             this.orderrepository.save(orders);
             return ResponseEntity.ok("Xác nhận đơn hàng thành công ");
@@ -197,8 +203,24 @@ public class orderServiceImpl implements orderService{
     }
 
     @Override
-    public List<Orders> findByDeliveryDateAndOrderStatus(Date deleveryDate, String orderStatus) {
-        return this.orderrepository.findByDeliveryDateAndOrderStatus(deleveryDate, orderStatus);
+    public List<Orders> findByOrderDateAndOrderStatus(Date orderDate, String orderStatus) {
+        return this.orderrepository.findByOrderDateAndOrderStatus(orderDate, orderStatus);
+    }
+
+    @Override
+    public ResponseEntity<?> updateOrderAddress(int orderID, String updateAddress, User user) {
+        Orders order = this.orderrepository.findOrdersByOrderID(orderID);
+        if(order != null){
+            if(order.getUser().getUserID() == user.getUserID()){
+                order.setDeliveryAddress(updateAddress);
+                this.orderrepository.save(order);
+                return ResponseEntity.ok("Cập nhật địa chỉ đơn hàng thành công");
+            }else {
+                return ResponseEntity.badRequest().body("Người dùng không hợp lệ");
+            }
+        }else {
+            return ResponseEntity.badRequest().body("Mã đơn hàng không hợp lệ");
+        }
     }
 
     @Override

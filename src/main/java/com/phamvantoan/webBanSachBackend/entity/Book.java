@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.sql.Date;
 import java.util.List;
 @Entity
 @Table(name = "book")
@@ -25,7 +26,8 @@ public class Book {
     @Column(name = "listed_price")
     private double listedPrice;
 
-    @Column(name = "decription")
+    @Column(name = "decription", columnDefinition = "LONGTEXT")
+    @Lob
     private String decription;
 
     @Column(name = "number_of_book")
@@ -36,27 +38,42 @@ public class Book {
     @Column(name = "point")
     private int point;
 
+    @Column(name = "publisher")
+    private String publisher;
+
+    @Column(name = "publication_year")
+    private Date publicationYear;
+
+    @Column(name = "language")
+    private String language;
+
+    @Column(name = "content", columnDefinition = "LONGTEXT")
+    @Lob
+    private String content;
+
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Image> imageList;
 
-    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
     private Author author;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH})
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinTable(name = "book_wishlist", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "wish_list_id"))
     private List<WishList> listWishList;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH, CascadeType.DETACH})
+    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinTable(name = "book_category", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<Category> categoryList;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Evaluate> evaluateList;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.EAGER)
     private List<CartItem> cartItemList;
 
-    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.EAGER)
     private List<OrderItem> orderItemList;
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL,orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<BillItem> billItemList;
 }
